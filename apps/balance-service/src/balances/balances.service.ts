@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { CreateBalanceDto } from './dto/create-balance.dto';
+import { AssetMap, WalletMap } from './entities/balance.entity';
 
 @Injectable()
 export class BalancesService {
@@ -8,33 +9,40 @@ export class BalancesService {
   constructor(private readonly balancesRepository: BalancesRepository) { }
 
   async getUserBalances(userId: string, targetCurrency: string): Promise<number> {
-    return this.balancesRepository.getUserTotalBalance(userId, targetCurrency);
+    return this.balancesRepository.getUserTotalCurrencyBalance(userId, targetCurrency);
   }
 
-  getAllBalances() {
-    throw new Error('Method not implemented.');
+  async getAllUserBalances(userId: string): Promise<AssetMap> {
+    return this.balancesRepository.getAllUserBalances(userId);
+  }
+
+  async getAllBalances() {
+    return this.balancesRepository.getAllBalances();
   }
 
   async addBalance(addBalanceDto: CreateBalanceDto): Promise<void> {
     const { userId, asset, amount } = addBalanceDto;
-    const userBalances = await this.balancesRepository.getAllUserBalances(userId);
-    userBalances[asset] = (+userBalances[asset] || 0) + +amount;
-    await this.balancesRepository.saveUserBalances(userId, userBalances);
+    try {
+      const userBalances = await this.balancesRepository.getAllUserBalances(userId);
+      if (!userBalances[asset]) {
+        userBalances[asset] = 0;
+      }
+      userBalances[asset] += amount
+      await this.balancesRepository.saveUserBalances(userId, userBalances);
+    } catch (error) {
+      Next();
+    }
+
   }
 
   async removeBalance(userId: string, currency: string, amount: number): Promise<void> {
-    const userBalances = await this.balancesRepository.getAllUserBalances(userId);
-
-    if (!userBalances[currency] || userBalances[currency] < amount) {
-      throw new Error(`Insufficient balance for currency: ${currency}`);
+    const userBalances: AssetMap = await this.balancesRepository.getAllUserBalances(userId);
+    for (const [key, value] of Object.entries(userBalances)) {
+      if (key === currency) {
+        continue;
+      }
+      userBalances[key] -= amount;
     }
-
-    userBalances[currency] -= amount;
-
-    if (userBalances[currency] === 0) {
-      delete userBalances[currency]; // Remove the currency if the balance is zero
-    }
-
     await this.balancesRepository.saveUserBalances(userId, userBalances);
   }
 
@@ -46,7 +54,7 @@ export class BalancesService {
       if (!rates[currency]) {
         throw new Error(`Missing rate for currency: ${currency}`);
       }
-      total += amount * rates[currency];
+      total += amount[currency] * rates[currency];
     }
 
     return total / rates[targetCurrency];

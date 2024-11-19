@@ -1,3 +1,5 @@
-export type Balance = {
-    [currency: string]: number;
-}
+
+export type WalletMap = Record<string, AssetMap>;
+
+
+export type AssetMap = Record<string, number>;
