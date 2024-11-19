@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/crypto-kings/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/crypto-kings/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/crypto-kings",
+  "projects": {
+    "crypto-kings": {
+      "type": "application",
+      "root": "apps/crypto-kings",
+      "entryFile": "main",
+      "sourceRoot": "apps/crypto-kings/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/crypto-kings/tsconfig.app.json"
+      }
+    },
+    "balance-service": {
+      "type": "application",
+      "root": "apps/balance-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/balance-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/balance-service/tsconfig.app.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
+    }
+  }
+}
