@@ -1,5 +1,7 @@
+import { InternalServerException } from '@app/error-handling';
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
+import { NotFoundException } from 'libs/error-handling/exceptions/not-found.exception';
 import * as path from 'path';
 
 @Injectable()
@@ -16,9 +18,9 @@ export class FileService {
             return JSON.parse(data) as T;
         } catch (error) {
             if (error.code === 'ENOENT') {
-                throw new Error(`File not found at ${filePath}`);
+                throw new NotFoundException(`File not found at ${filePath}`);
             }
-            throw error;
+            throw new InternalServerException(`Error reading file at ${filePath}`);
         }
     }
 
@@ -33,7 +35,7 @@ export class FileService {
             const jsonData = JSON.stringify(data, null, 2);
             await fs.writeFile(fullPath, jsonData, 'utf8');
         } catch (error) {
-            throw new Error(`Failed to write to file at ${filePath}: ${error.message}`);
+            throw new InternalServerException(`Failed to write to file at ${filePath}: ${error.message}`);
         }
     }
 
@@ -51,7 +53,7 @@ export class FileService {
             if (error.code === 'ENOENT') {
                 return false;
             }
-            throw error;
+            throw new InternalServerException(`Error checking if file exists at ${filePath}`);
         }
     }
 }

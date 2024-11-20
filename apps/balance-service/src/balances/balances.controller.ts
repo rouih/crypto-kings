@@ -2,6 +2,7 @@ import { Controller, Post, Body, Headers, Delete, Get, Query } from '@nestjs/com
 import { BalancesService } from './balances.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 import logger from '@app/shared/logger/winston-logger';
+import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 
 @Controller('balances')
 export class BalancesController {
@@ -17,7 +18,7 @@ export class BalancesController {
       return newBalance;
     } catch (error) {
       logger.error('Error adding balance:', error);
-      throw error; // You can also throw a custom exception here
+      throw new InternalServerException('Error adding balance');
     }
   }
 
@@ -32,7 +33,7 @@ export class BalancesController {
       return { message: 'Balance removed successfully' };
     } catch (error) {
       logger.error('Error removing balance:', error);
-      throw error; // You can throw a custom exception or handle the error
+      throw new InternalServerException('Error removing balance');
     }
   }
 
@@ -42,7 +43,7 @@ export class BalancesController {
       return await this.balancesService.getAllBalances();
     } catch (error) {
       logger.error('Error retrieving all balances:', error);
-      throw error;
+      throw new InternalServerException('Error retrieving all balances');
     }
   }
 
@@ -52,7 +53,7 @@ export class BalancesController {
       return await this.balancesService.getAllUserBalances(userId);
     } catch (error) {
       logger.error(`Error retrieving balances for user ${userId}:`, error);
-      throw error;
+      throw new InternalServerException('Error retrieving balances for user');
     }
   }
 
@@ -65,7 +66,7 @@ export class BalancesController {
       return await this.balancesService.getUserBalancesInCurrency(userId, targetCurrency);
     } catch (error) {
       logger.error(`Error retrieving total balance for user ${userId} in ${targetCurrency}:`, error);
-      throw error;
+      throw new InternalServerException('Error retrieving total balance');
     }
   }
 }

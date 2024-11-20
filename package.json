@@ -87,7 +87,8 @@
     ],
     "moduleNameMapper": {
       "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1",
-      "^@app/file(|/.*)$": "<rootDir>/libs/file/src/$1"
+      "^@app/file(|/.*)$": "<rootDir>/libs/file/src/$1",
+      "^@app/error-handling(|/.*)$": "<rootDir>/libs/error-handling/src/$1"
     }
   }
 }

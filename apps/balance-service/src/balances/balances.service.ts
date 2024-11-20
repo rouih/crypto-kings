@@ -2,6 +2,7 @@ import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 import { AssetMap } from '../../../../libs/shared/entities/balance.entity';
+import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 
 @Injectable()
 export class BalancesService {
@@ -52,7 +53,7 @@ export class BalancesService {
 
     for (const [currency, amount] of Object.entries(userBalances)) {
       if (!rates[currency]) {
-        throw new Error(`Missing rate for currency: ${currency}`);
+        throw new InternalServerException(`Missing rate for currency: ${currency}`);
       }
       total += amount[currency] * rates[currency];
     }
