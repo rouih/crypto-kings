@@ -5,7 +5,6 @@ import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CacheSharedModule } from '@app/shared/cache/cache.module';
-
 @Module({
   imports: [
     HttpModule,

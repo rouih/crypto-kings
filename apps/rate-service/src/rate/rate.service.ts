@@ -12,6 +12,7 @@ dotenv.config();
 export class RateService implements OnModuleInit {
     private readonly coingeckoApiUrl = process.env.COINGECKO_URI || 'https://api.coingecko.com/api/v3/simple/price';
     private readonly coinGeckoIds = process.env.COINGECKO_IDS || 'bitcoin';
+    private readonly coinGeckoCurrencies = process.env.COINGECKO_CURRENCIES || 'usd'
 
     constructor(
         private readonly httpService: HttpService,
@@ -32,7 +33,7 @@ export class RateService implements OnModuleInit {
         const response = await this.httpService.axiosRef.get(this.coingeckoApiUrl, {
             params: {
                 ids: this.coinGeckoIds,
-                vs_currencies: 'usd,eur,gbp,jpy,cny,krw,rub,aud,brl,cad,chf,clp,czk,dkk,hkd,huf,idr,ils,inr,jpy,krw,mxn,myr,nok,nzd,php,pln,ron,sek,sgd,thb,try,zar,aud,brl,cad,chf,clp,czk,dkk,hkd,huf,idr,ils,inr,jpy,krw,mxn,myr,nok,nzd,php,pln,ron,sek,sgd,thb,try,zar',
+                vs_currencies: this.coinGeckoCurrencies,
             },
         });
         return response.data;

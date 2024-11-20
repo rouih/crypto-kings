@@ -8,7 +8,9 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
-    "start": "nest start",
+    "start": "concurrently \"npm run start:balance-service\" \"npm run start:rate-service\"",
+    "start:balance-service": "nest start balance-service",
+    "start:rate-service": "nest start  rate-service",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:dev:balance": "nest start balance-service --debug --watch",
@@ -31,10 +33,14 @@
     "@nestjs/schedule": "^4.1.1",
     "axios": "^1.7.7",
     "cache-manager": "^5.7.6",
+    "cache-manager-redis-store": "^3.0.1",
+    "cache-manager-redis-yet": "^5.1.5",
     "class-validator": "^0.14.1",
+    "concurrently": "^9.1.0",
     "dotenv": "^16.4.5",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -80,7 +86,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
+      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1",
+      "^@app/file(|/.*)$": "<rootDir>/libs/file/src/$1"
     }
   }
 }

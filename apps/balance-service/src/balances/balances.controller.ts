@@ -29,6 +29,13 @@ export class BalancesController {
     return await this.balancesService.getAllBalances();
   }
 
+  @Get('userBalance')
+  async getUserBalance(
+    @Headers('X-User-ID') userId: string,
+  ) {
+    return await this.balancesService.getAllUserBalances(userId);
+  }
+
   @Get('total')
   async getTotalBalance(
     @Headers('X-User-ID') userId: string,

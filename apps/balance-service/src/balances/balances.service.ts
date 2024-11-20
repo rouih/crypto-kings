@@ -1,7 +1,7 @@
 import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { AssetMap, WalletMap } from './entities/balance.entity';
+import { AssetMap } from '../../../../libs/shared/entities/balance.entity';
 
 @Injectable()
 export class BalancesService {

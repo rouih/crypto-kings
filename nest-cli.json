@@ -45,6 +45,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/rate-service/tsconfig.app.json"
       }
+    },
+    "file": {
+      "type": "library",
+      "root": "libs/file",
+      "entryFile": "index",
+      "sourceRoot": "libs/file/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/file/tsconfig.lib.json"
+      }
     }
   }
 }
