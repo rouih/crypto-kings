@@ -54,6 +54,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/file/tsconfig.lib.json"
       }
+    },
+    "error-handling": {
+      "type": "library",
+      "root": "libs/error-handling",
+      "entryFile": "index",
+      "sourceRoot": "libs/error-handling/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/error-handling/tsconfig.lib.json"
+      }
     }
   }
 }

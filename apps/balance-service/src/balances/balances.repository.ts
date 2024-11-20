@@ -5,6 +5,8 @@ import { CacheService } from '@app/shared/cache/cache.service';
 import { FileService } from '@app/shared/file/src';
 import { configDotenv } from 'dotenv';
 import logger from '@app/shared/logger/winston-logger';
+import { NotFoundException } from 'libs/error-handling/exceptions/not-found.exception';
+import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 
 configDotenv();
 
@@ -13,7 +15,8 @@ export class BalancesRepository {
     constructor(
         @Inject(CacheService) private readonly cacheService: CacheService,
         @Inject(FileService) private readonly fileService: FileService
-    ) { }
+    ) {
+    }
 
     private readonly filePath = path.resolve(__dirname, '../../../data/balances.json');
     private readonly cacheKey = 'balances'; // Key to store data in cache
@@ -30,7 +33,7 @@ export class BalancesRepository {
                     // File doesn't exist, return an empty object
                     await this.cacheService.set(this.cacheKey, {});
                 } else {
-                    throw error;
+                    throw new InternalServerException('Error loading balances from file');
                 }
             }
         }
@@ -44,7 +47,10 @@ export class BalancesRepository {
 
     async getAllUserBalances(userId: string): Promise<AssetMap> {
         const balances = await this.getAllBalances();
-        return balances[userId] || {};
+        if (!balances) {
+            throw new NotFoundException(`User ${userId} not found`);
+        }
+        return balances[userId];
     }
 
     async addBalance(userId: string, asset: string, amount: number): Promise<void> {

@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { NotFoundException } from '@app/error-handling';
 
 @Injectable()
 export class CacheService {
@@ -25,6 +26,10 @@ export class CacheService {
         if ('keys' in this.cacheManager.store) {
             return (this.cacheManager.store as any).keys();
         }
-        throw new Error('Keys method is not supported by the current cache store');
+        throw new NotFoundException('Keys method is not supported by the current cache store');
+    }
+
+    async clear(): Promise<void> {
+        await this.cacheManager.reset();
     }
 }
