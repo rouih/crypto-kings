@@ -4,14 +4,18 @@ import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import * as dotenv from 'dotenv'
+import { CacheService } from '@app/shared/cache/cache.service';
 
+dotenv.config();
 @Injectable()
 export class RateService implements OnModuleInit {
-    private readonly coingeckoApiUrl = 'https://api.coingecko.com/api/v3/simple/price';
+    private readonly coingeckoApiUrl = process.env.COINGECKO_URI || 'https://api.coingecko.com/api/v3/simple/price';
+    private readonly coinGeckoIds = process.env.COINGECKO_IDS || 'bitcoin';
 
     constructor(
         private readonly httpService: HttpService,
-        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        private readonly cacheService: CacheService,
     ) { }
 
     @Cron(CronExpression.EVERY_HOUR)
@@ -24,30 +28,29 @@ export class RateService implements OnModuleInit {
         await this.updateRates();
     }
 
-    async fetchRates(): Promise<Record<string, number>> {
+    async fetchRates(): Promise<Record<string, Record<number, number>>> {
         const response = await this.httpService.axiosRef.get(this.coingeckoApiUrl, {
             params: {
-                ids: process.env.ASSETS_FETCH_IDS,
-                vs_currencies: 'usd',
+                ids: this.coinGeckoIds,
+                vs_currencies: 'usd,eur,gbp,jpy,cny,krw,rub,aud,brl,cad,chf,clp,czk,dkk,hkd,huf,idr,ils,inr,jpy,krw,mxn,myr,nok,nzd,php,pln,ron,sek,sgd,thb,try,zar,aud,brl,cad,chf,clp,czk,dkk,hkd,huf,idr,ils,inr,jpy,krw,mxn,myr,nok,nzd,php,pln,ron,sek,sgd,thb,try,zar',
             },
         });
         return response.data;
     }
 
-    async getRate(crypto: string): Promise<number> {
-        const rate = await this.cacheManager.get(crypto); //prints undefined
+    async getRate(crypto: string, currency?: string): Promise<number> {
+        const rate = await this.cacheService.get(crypto); //prints undefined
         if (!rate) {
             throw new Error(`Rate for ${crypto} not available`);
         }
-        return rate as number;
+        return currency ? rate[currency] : rate;
     }
 
     async updateRates(): Promise<void> {
         console.log('Updating rates...');
         const rates = await this.fetchRates();
-        console.log(rates)
         for (const [crypto, value] of Object.entries(rates)) {
-            await this.cacheManager.set(crypto, value, 360000);
+            await this.cacheService.set(crypto, value, 360000);
         }
     }
 }

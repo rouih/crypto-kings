@@ -34,6 +34,6 @@ export class BalancesController {
     @Headers('X-User-ID') userId: string,
     @Query('currency') targetCurrency: string,
   ) {
-    return await this.balancesService.getUserBalances(userId, targetCurrency);
+    return await this.balancesService.getUserBalancesInCurrency(userId, targetCurrency);
   }
 }

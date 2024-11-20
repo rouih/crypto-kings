@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { RateServiceModule } from './rate-service.module';
-import { LoggingService } from '@app/shared/modules/logger/logger.service';
+import { RateServiceModule } from './rate/rate.module';
+import { LoggingService } from '@app/shared/logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(RateServiceModule);

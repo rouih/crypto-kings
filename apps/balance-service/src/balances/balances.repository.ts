@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AssetMap, WalletMap as BalanceEntity } from './entities/balance.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheService } from '@app/shared/cache/cache.service';
+
 
 @Injectable()
 export class BalancesRepository {
+    constructor(@Inject(CacheService) private readonly cacheService: CacheService) { }
 
     private readonly filePath = path.resolve(__dirname, '../../../data/balances.json');
 
@@ -29,11 +34,18 @@ export class BalancesRepository {
     }
 
     async getUserTotalCurrencyBalance(userId: string, targetCurrency?: string): Promise<number> {
-        const balances = await this.getAllUserBalances(userId);
-        if (targetCurrency) {
-            return balances[targetCurrency] || 0;
+        const userBalances = await this.getAllUserBalances(userId);
+        let total = 0;
+        for (const [asset, amount] of Object.entries(userBalances)) {
+            // Fetch the conversion rate from the cache
+            const rate = await this.cacheService.get<Number>(asset) as number;
+            if (!rate) {
+                throw new Error(`Rate for asset ${asset} is not available`);
+            }
+            total += amount * rate;
         }
-        return balances[targetCurrency] || 0;
+
+        return total;
     }
 
     async saveUserBalances(userId: string, balances: AssetMap): Promise<void> {

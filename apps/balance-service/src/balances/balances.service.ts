@@ -8,7 +8,7 @@ export class BalancesService {
 
   constructor(private readonly balancesRepository: BalancesRepository) { }
 
-  async getUserBalances(userId: string, targetCurrency: string): Promise<number> {
+  async getUserBalancesInCurrency(userId: string, targetCurrency: string): Promise<number> {
     return this.balancesRepository.getUserTotalCurrencyBalance(userId, targetCurrency);
   }
 
@@ -27,7 +27,7 @@ export class BalancesService {
       if (!userBalances[asset]) {
         userBalances[asset] = 0;
       }
-      userBalances[asset] += amount
+      userBalances[asset] += Number(amount)
       await this.balancesRepository.saveUserBalances(userId, userBalances);
     } catch (error) {
       Next();
