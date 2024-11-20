@@ -1,14 +1,14 @@
 import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { AssetMap, WalletMap } from './entities/balance.entity';
+import { AssetMap } from '../../../../libs/shared/entities/balance.entity';
 
 @Injectable()
 export class BalancesService {
 
   constructor(private readonly balancesRepository: BalancesRepository) { }
 
-  async getUserBalances(userId: string, targetCurrency: string): Promise<number> {
+  async getUserBalancesInCurrency(userId: string, targetCurrency: string): Promise<number> {
     return this.balancesRepository.getUserTotalCurrencyBalance(userId, targetCurrency);
   }
 
@@ -27,7 +27,7 @@ export class BalancesService {
       if (!userBalances[asset]) {
         userBalances[asset] = 0;
       }
-      userBalances[asset] += amount
+      userBalances[asset] += Number(amount)
       await this.balancesRepository.saveUserBalances(userId, userBalances);
     } catch (error) {
       Next();
@@ -35,10 +35,10 @@ export class BalancesService {
 
   }
 
-  async removeBalance(userId: string, currency: string, amount: number): Promise<void> {
+  async removeBalance(userId: string, asset: string, amount: number): Promise<void> {
     const userBalances: AssetMap = await this.balancesRepository.getAllUserBalances(userId);
-    for (const [key, value] of Object.entries(userBalances)) {
-      if (key === currency) {
+    for (const [key] of Object.entries(userBalances)) {
+      if (key !== asset) {
         continue;
       }
       userBalances[key] -= amount;
