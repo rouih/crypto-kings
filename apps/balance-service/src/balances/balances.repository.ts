@@ -4,6 +4,7 @@ import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.en
 import { CacheService } from '@app/shared/cache/cache.service';
 import { FileService } from '@app/shared/file/src';
 import { configDotenv } from 'dotenv';
+import logger from '@app/shared/logger/winston-logger';
 
 configDotenv();
 
@@ -14,48 +15,72 @@ export class BalancesRepository {
         @Inject(FileService) private readonly fileService: FileService
     ) { }
 
-    private readonly filePath = path.resolve(__dirname, process.env.DB_PATH);
+    private readonly filePath = path.resolve(__dirname, '../../../data/balances.json');
+    private readonly cacheKey = 'balances'; // Key to store data in cache
+
+    // Load all balances from file into cache (if not already loaded)
+    private async loadBalancesIntoCache(): Promise<void> {
+        const cachedBalances = await this.cacheService.get<WalletMap>(this.cacheKey);
+        if (!cachedBalances) {
+            try {
+                const fileBalances = await this.fileService.readFile(this.filePath) as WalletMap;
+                await this.cacheService.set(this.cacheKey, fileBalances); // Store in cache
+            } catch (error) {
+                if (error.code === 'ENOENT') {
+                    // File doesn't exist, return an empty object
+                    await this.cacheService.set(this.cacheKey, {});
+                } else {
+                    throw error;
+                }
+            }
+        }
+    }
 
     async getAllBalances(): Promise<WalletMap> {
-        try {
-            const data = await this.fileService.readFile(this.filePath) as WalletMap;
-            return data;
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                return {};
-            }
-            throw error;
-        }
+        // Ensure balances are loaded in cache
+        await this.loadBalancesIntoCache();
+        return this.cacheService.get<WalletMap>(this.cacheKey) || {};
     }
 
     async getAllUserBalances(userId: string): Promise<AssetMap> {
         const balances = await this.getAllBalances();
-        if (!balances[userId]) {
-            return {};
-        }
-        return balances[userId];
+        return balances[userId] || {};
     }
 
-    async getUserTotalCurrencyBalance(userId: string, targetCurrency?: string): Promise<number> {
+    async addBalance(userId: string, asset: string, amount: number): Promise<void> {
         const userBalances = await this.getAllUserBalances(userId);
-        let total = 0;
+        userBalances[asset] = (userBalances[asset] || 0) + amount;
 
-        for (const [asset, amount] of Object.entries(userBalances)) {
-            // Fetch the conversion rate from the cache
-            const rate = await this.cacheService.get<Number>(asset) as number;
-            if (!rate) {
-                throw new Error(`Rate for asset ${asset} is not available`);
-            }
-            total += amount * rate[targetCurrency];
-        }
-
-        return total;
+        await this.saveUserBalances(userId, userBalances);
     }
 
     async saveUserBalances(userId: string, balances: AssetMap): Promise<void> {
         const allBalances = await this.getAllBalances();
+
+        // Update balances for the specific user
         allBalances[userId] = balances;
+
+        await this.cacheService.set(this.cacheKey, allBalances);
         await this.fileService.writeFile(this.filePath, allBalances);
     }
-}
 
+    // Get the user's total balance in a target currency (e.g., USD, EUR)
+    async getUserTotalCurrencyBalance(userId: string, targetCurrency: string): Promise<number> {
+        const userBalances = await this.getAllUserBalances(userId);
+        let total = 0;
+
+        // Iterate over the user's assets and calculate the total in the target currency
+        for (const [asset, amount] of Object.entries(userBalances)) {
+            // Fetch the conversion rate from the cache for the asset
+            const rate = await this.cacheService.get<number>(`${asset}-${targetCurrency}`);
+            if (!rate) {
+                logger.info(`Rate for asset ${asset} to ${targetCurrency} is not available`);
+                continue;
+            }
+
+            total += amount * rate; // Multiply the asset amount by its conversion rate
+        }
+
+        return total;
+    }
+}

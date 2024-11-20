@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as dotenv from 'dotenv'
+import logger from '@app/shared/logger/winston-logger';
 import { CacheService } from '@app/shared/cache/cache.service';
 
 dotenv.config();
@@ -48,10 +49,16 @@ export class RateService implements OnModuleInit {
     }
 
     async updateRates(): Promise<void> {
-        console.log('Updating rates...');
         const rates = await this.fetchRates();
+
+        // Loop through the crypto assets
         for (const [crypto, value] of Object.entries(rates)) {
-            await this.cacheService.set(crypto, value, 360000);
+            // Loop through each currency for that crypto
+            for (const [currency, rate] of Object.entries(value)) {
+                const cacheKey = `${crypto}-${currency}`;
+                await this.cacheService.set(cacheKey, rate, 360000);
+                logger.info(`Cached rate for ${crypto}-${currency}: ${rate}`);
+            }
         }
     }
 }

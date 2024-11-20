@@ -35,10 +35,10 @@ export class BalancesService {
 
   }
 
-  async removeBalance(userId: string, currency: string, amount: number): Promise<void> {
+  async removeBalance(userId: string, asset: string, amount: number): Promise<void> {
     const userBalances: AssetMap = await this.balancesRepository.getAllUserBalances(userId);
-    for (const [key, value] of Object.entries(userBalances)) {
-      if (key === currency) {
+    for (const [key] of Object.entries(userBalances)) {
+      if (key !== asset) {
         continue;
       }
       userBalances[key] -= amount;
