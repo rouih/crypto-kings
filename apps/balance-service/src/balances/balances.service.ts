@@ -1,11 +1,12 @@
 import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { AssetMap } from '../../../../libs/shared/entities/balance.entity';
+import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.entity';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
+import { IBalancesService } from 'libs/shared/interfaces/balance-service.interface';
 
 @Injectable()
-export class BalancesService {
+export class BalancesService implements IBalancesService {
 
   constructor(private readonly balancesRepository: BalancesRepository) { }
 
@@ -17,7 +18,7 @@ export class BalancesService {
     return this.balancesRepository.getAllUserBalances(userId);
   }
 
-  async getAllBalances() {
+  async getAllBalances(): Promise<WalletMap> {
     return this.balancesRepository.getAllBalances();
   }
 

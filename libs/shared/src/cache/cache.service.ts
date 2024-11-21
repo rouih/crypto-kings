@@ -6,7 +6,6 @@ import { NotFoundException } from '@app/error-handling';
 @Injectable()
 export class CacheService {
     constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
-        console.log("Cache service created");
     }
 
     async get<T>(key: string): Promise<T | undefined> {

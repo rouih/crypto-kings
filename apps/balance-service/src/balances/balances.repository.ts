@@ -7,16 +7,18 @@ import { configDotenv } from 'dotenv';
 import logger from '@app/shared/logger/winston-logger';
 import { NotFoundException } from 'libs/error-handling/exceptions/not-found.exception';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
+import { IBalancesRepository } from 'libs/shared/interfaces/balance-repository.interface';
 
 configDotenv();
 
 @Injectable()
-export class BalancesRepository {
+export class BalancesRepository implements IBalancesRepository {
     constructor(
         @Inject(CacheService) private readonly cacheService: CacheService,
         @Inject(FileService) private readonly fileService: FileService
     ) {
     }
+
 
     private readonly filePath = path.resolve(__dirname, '../../../data/balances.json');
     private readonly cacheKey = 'balances'; // Key to store data in cache
@@ -52,7 +54,6 @@ export class BalancesRepository {
         }
         return balances[userId];
     }
-
     async addBalance(userId: string, asset: string, amount: number): Promise<void> {
         const userBalances = await this.getAllUserBalances(userId);
         userBalances[asset] = (userBalances[asset] || 0) + amount;

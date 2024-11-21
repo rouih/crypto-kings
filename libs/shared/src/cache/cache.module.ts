@@ -2,7 +2,9 @@ import { Global, Module, } from '@nestjs/common';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheService } from './cache.service';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 @Global()
 @Module({
     imports: [
@@ -10,8 +12,8 @@ import { CacheModule, CacheStore } from '@nestjs/cache-manager';
             useFactory: async () => {
                 const store = await redisStore({
                     socket: {
-                        host: 'localhost',
-                        port: 6379,
+                        host: process.env.REDIS_HOST || 'localhost',
+                        port: +process.env.REDIS_PORT || 6379,
                     },
                 });
 
