@@ -4,7 +4,6 @@ import { CreateBalanceDto } from './dto/create-balance.dto';
 import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.entity';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 import { IBalancesService } from 'libs/shared/interfaces/balance-service.interface';
-import { BadRequestException } from 'libs/error-handling/exceptions/bad-request.exception';
 
 @Injectable()
 export class BalancesService implements IBalancesService {

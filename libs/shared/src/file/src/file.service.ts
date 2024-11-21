@@ -1,7 +1,6 @@
-import { InternalServerException } from '@app/error-handling';
+import { InternalServerException, NotFoundException } from '@app/error-handling';
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
-import { NotFoundException } from 'libs/error-handling/exceptions/not-found.exception';
 import * as path from 'path';
 
 @Injectable()

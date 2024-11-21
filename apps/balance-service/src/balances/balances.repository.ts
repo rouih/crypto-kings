@@ -5,7 +5,7 @@ import { CacheService } from '@app/shared/cache/cache.service';
 import { FileService } from '@app/shared/file/src';
 import { configDotenv } from 'dotenv';
 import logger from '@app/shared/logger/winston-logger';
-import { NotFoundException } from 'libs/error-handling/exceptions/not-found.exception';
+import { NotFoundException } from 'libs/error-handling/exceptions/exceptions.index';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 import { IBalancesRepository } from 'libs/shared/interfaces/balance-repository.interface';
 
