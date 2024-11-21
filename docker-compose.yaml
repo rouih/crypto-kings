@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: nestjs-app
+    ports:
+      - '3000:3000' # Expose the app's port on the host machine
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis # Make sure Redis is started before the app
+
+  redis:
+    image: redis:latest # Use the latest Redis image
+    container_name: redis
+    ports:
+      - '6379:6379' # Expose Redis' default port
+    volumes:
+      - redis_data:/data # Persist Redis data
+
+volumes:
+  redis_data:
+    driver: local
