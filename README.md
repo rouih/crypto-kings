@@ -1,8 +1,8 @@
-# Wallet Management API
+# Crypto-Kings API
 
 ## Overview
 
-The **Wallet Management API** is designed to allow users to manage their crypto asset balances. Users can perform operations such as adding assets, removing assets, viewing total balances, and rebalancing their portfolio to match specific target percentages.
+**Crypto Kings Wallet Management API** is designed to allow users to manage their crypto asset balances. Users can perform operations such as adding assets, removing assets, viewing total balances, and rebalancing their portfolio to match specific target percentages.
 
 ---
 
@@ -154,13 +154,13 @@ To install the **Wallet Management API** using Docker, follow these steps:
 2. Build the Docker image:
 
    ```bash
-   docker build -t wallet-management-api .
+   docker build -t crypto-kings-api .
    ```
 
 3. Run the Docker container:
 
    ```bash
-   docker run -p 3000:3000 wallet-management-api
+   docker run -p 3000:3000 crypto-kings-api
    ```
 
 ## Docker Compose Installation
