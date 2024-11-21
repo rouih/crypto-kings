@@ -60,4 +60,27 @@ describe('BalancesService', () => {
         expect(balancesRepository.getAllUserBalances).toHaveBeenCalledWith('123');
         expect(balancesRepository.saveUserBalances).toHaveBeenCalledWith('123', { bitcoin: 15, ethereum: 10 });
     });
+
+    it('should rebalance user holdings according to target percentages', async () => {
+        jest.spyOn(balancesRepository, 'getAllUserBalances').mockResolvedValue({
+            bitcoin: 1,
+            ethereum: 2,
+        });
+        jest.spyOn(cacheService, 'get').mockImplementation(async (asset) => {
+            if (asset === 'bitcoin') return 50000;
+            if (asset === 'ethereum') return 4000;
+            return undefined;
+        });
+        jest.spyOn(balancesRepository, 'saveUserBalances').mockResolvedValue();
+
+        await balancesService.rebalance('user1', {
+            bitcoin: 50,
+            ethereum: 50,
+        });
+
+        expect(balancesRepository.saveUserBalances).toHaveBeenCalledWith('user1', {
+            bitcoin: 0.5, // $25k worth of Bitcoin at $50k per BTC
+            ethereum: 6.25, // $25k worth of Ethereum at $4k per ETH
+        });
+    });
 });
