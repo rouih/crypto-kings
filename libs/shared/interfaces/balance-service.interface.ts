@@ -8,4 +8,5 @@ export interface IBalancesService {
     addBalance(addBalanceDto: CreateBalanceDto): Promise<void>;
     removeBalance(userId: string, asset: string, amount: number): Promise<void>;
     calculateTotalBalance(userId: string, rates: Record<string, number>, targetCurrency: string): Promise<number>;
+    rebalance(userId: string, targetPercentages: Record<string, number>): Promise<void>;
 }

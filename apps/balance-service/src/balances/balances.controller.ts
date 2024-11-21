@@ -1,19 +1,22 @@
-import { Controller, Post, Body, Headers, Delete, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Delete, Get, Query, Param } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 import logger from '@app/shared/logger/winston-logger';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 import { BadRequestException } from 'libs/error-handling/exceptions/bad-request.exception';
+import { AssetMap, WalletMap } from 'libs/shared/entities/balance.entity';
+import { IBalanceController } from 'libs/shared/interfaces/balance-controller.interface';
 
 @Controller('balances')
-export class BalancesController {
+export class BalancesController implements IBalanceController {
   constructor(private readonly balancesService: BalancesService) { }
+
 
   @Post('add')
   async addBalance(
     @Headers('X-User-ID') userId: string,
     @Body() body: { asset: string; amount: number },
-  ) {
+  ): Promise<{ message: string }> {
     try {
       if (!body.asset || body.asset.length === 0) {
         throw new BadRequestException('Missing asset or asset is empty');
@@ -26,12 +29,31 @@ export class BalancesController {
     }
   }
 
+  @Post('/rebalance')
+  async rebalance(
+    @Headers('X-User-ID') userId: string,
+    @Body() targetPercentages: Record<string, number>,
+    @Query('baseCurrency') baseCurrency = 'usd',
+  ): Promise<{ message: string }> {
+    try {
+      const totalPercentage = Object.values(targetPercentages).reduce((sum, p) => sum + p, 0);
+      if (totalPercentage !== 100) {
+        throw new BadRequestException('Target percentages must sum to 100');
+      }
+      await this.balancesService.rebalance(userId, targetPercentages, baseCurrency);
+      return { message: 'Balances rebalanced successfully' };
+    } catch (error) {
+      throw new InternalServerException(error);
+    }
+  }
+
+
   @Delete('remove')
   async removeBalance(
     @Headers('X-User-ID') userId: string,
     @Body() body: { amount: number },
     @Query('asset') asset: string,
-  ) {
+  ): Promise<{ message: string }> {
     try {
       if (!asset || asset.length === 0) {
         throw new BadRequestException('Missing asset or asset is empty');
@@ -44,8 +66,9 @@ export class BalancesController {
     }
   }
 
+
   @Get()
-  async getBalances(@Headers('X-User-ID') userId: string) {
+  async getBalances(@Headers('X-User-ID') userId: string): Promise<WalletMap> {
     try {
       return await this.balancesService.getAllBalances();
     } catch (error) {
@@ -55,7 +78,7 @@ export class BalancesController {
   }
 
   @Get('userBalance')
-  async getUserBalance(@Headers('X-User-ID') userId: string) {
+  async getUserBalance(@Headers('X-User-ID') userId: string): Promise<AssetMap> {
     try {
       if (!userId || userId.length === 0) {
         throw new BadRequestException('Missing userId or userId is empty');
@@ -71,7 +94,7 @@ export class BalancesController {
   async getTotalBalance(
     @Headers('X-User-ID') userId: string,
     @Query('currency') targetCurrency: string,
-  ) {
+  ): Promise<number> {
     try {
       if (!targetCurrency || targetCurrency.length === 0) {
         throw new BadRequestException('Missing currency or currency is empty');

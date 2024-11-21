@@ -4,11 +4,17 @@ import { CreateBalanceDto } from './dto/create-balance.dto';
 import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.entity';
 import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
 import { IBalancesService } from 'libs/shared/interfaces/balance-service.interface';
+import { BadRequestException } from 'libs/error-handling/exceptions/bad-request.exception';
 
 @Injectable()
 export class BalancesService implements IBalancesService {
 
   constructor(private readonly balancesRepository: BalancesRepository) { }
+
+
+  async rebalance(userId: string, targetPercentages: Record<string, number>, baseCurrency = 'usd'): Promise<void> {
+    await this.balancesRepository.rebalanceUserBalances(userId, targetPercentages, baseCurrency);
+  }
 
   async getUserBalancesInCurrency(userId: string, targetCurrency: string): Promise<number> {
     return this.balancesRepository.getUserTotalCurrencyBalance(userId, targetCurrency);
