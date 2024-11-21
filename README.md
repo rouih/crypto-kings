@@ -129,6 +129,15 @@ To install the **Wallet Management API**, follow these steps:
    ```bash
    npm run start
    ```
+   Rate Service
+   ```bash
+   npm run start:rate-service
+   ```
+
+   Balance Service
+   ```bash
+   npm run start:balance-service
+   ```
 
 ---
 
@@ -178,6 +187,14 @@ To install the **Wallet Management API** using Docker Compose, follow these step
 
 ---
 
+## Run tests
+
+```bash
+# unit tests
+$ npm run test
+
+```
+
 ## Contributing
 
 Contributions are welcome! If you find a bug or have a suggestion, please open an issue or submit a pull request.
@@ -188,29 +205,5 @@ Contributions are welcome! If you find a bug or have a suggestion, please open a
 
 This project is licensed under the MIT License.
 
-## Project setup
 
-```bash
-$ npm install
-```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-```
