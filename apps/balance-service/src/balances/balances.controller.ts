@@ -16,8 +16,6 @@ import {
   RebalanceDto,
 } from './dto/balances.dto';
 import { LoggerService } from '../../../../libs/shared/src/logger/winston-logger';
-import { InternalServerException } from '../../../../libs/shared/src/error-handling/exceptions/internal-server.exception';
-import { BadRequestException } from '../../../../libs/shared/src/error-handling/exceptions/bad-request.exception';
 import {
   AssetMap,
   WalletMap,
@@ -50,7 +48,7 @@ export class BalancesController {
       };
     } catch (error) {
       this.logger.error('Error adding balance:', error);
-      throw new InternalServerException(error);
+      this.errorHandlingService.handleUpdateBalancesError(error);
     }
   }
 
@@ -64,7 +62,7 @@ export class BalancesController {
         rebalanceDto.targetPercentages,
       ).reduce((sum, p) => sum + p, 0);
       if (totalPercentage !== 100) {
-        throw new BadRequestException('Target percentages must sum to 100');
+        this.errorHandlingService.handleBadRequest('Target percentages must sum to 100');
       }
       await this.balancesService.rebalance(
         userId,
@@ -73,7 +71,7 @@ export class BalancesController {
       );
       return { message: 'Balances rebalanced successfully' };
     } catch (error) {
-      throw new InternalServerException(error);
+      this.errorHandlingService.handleUpdateBalancesError(error);
     }
   }
 
@@ -91,7 +89,7 @@ export class BalancesController {
       return { message: 'Balance removed successfully' };
     } catch (error) {
       this.logger.error('Error removing balance:', error);
-      throw new InternalServerException(error);
+      this.errorHandlingService.handleUpdateBalancesError(error);
     }
   }
 
@@ -110,7 +108,7 @@ export class BalancesController {
       return await this.balancesService.getAllBalances();
     } catch (error) {
       this.logger.error('Error retrieving balances:', error);
-      throw new InternalServerException(error);
+      this.errorHandlingService.handleGetBalancesError(error);
     }
   }
 
@@ -129,7 +127,7 @@ export class BalancesController {
         `Error retrieving total balance for user ${userId} in ${getTotalBalanceDto.targetCurrency}:`,
         error,
       );
-      throw new InternalServerException(error);
+      this.errorHandlingService.handleGetBalancesError(error);
     }
   }
 }

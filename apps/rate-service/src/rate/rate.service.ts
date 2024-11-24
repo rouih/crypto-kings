@@ -7,7 +7,6 @@ import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '../../../../libs/shared/src/logger/winston-logger';
 import { ErrorHandlerService } from '../../../../libs/shared/src/error-handling/src/error-handling.service';
 
-
 @Injectable()
 export class RateService implements OnModuleInit {
   private readonly coingeckoApiUrl: string;

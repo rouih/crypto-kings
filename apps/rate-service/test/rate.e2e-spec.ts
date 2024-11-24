@@ -41,7 +41,8 @@ describe('RateServiceController (e2e)', () => {
     rateService = moduleFixture.get<RateService>(RateService);
     cacheService = moduleFixture.get<CacheService>(CacheService);
     loggerService = moduleFixture.get<LoggerService>(LoggerService);
-    errorHandlerService = moduleFixture.get<ErrorHandlerService>(ErrorHandlerService);
+    errorHandlerService =
+      moduleFixture.get<ErrorHandlerService>(ErrorHandlerService);
   });
 
   afterAll(async () => {
@@ -71,7 +72,9 @@ describe('RateServiceController (e2e)', () => {
   });
 
   it('should return error if rate not found', async () => {
-    jest.spyOn(rateService, 'getRate').mockRejectedValue(new Error('Rate not available'));
+    jest
+      .spyOn(rateService, 'getRate')
+      .mockRejectedValue(new Error('Rate not available'));
 
     const response = await request(app.getHttpServer())
       .get('/bitcoin')
@@ -82,7 +85,9 @@ describe('RateServiceController (e2e)', () => {
   });
 
   it('should handle missing crypto gracefully', async () => {
-    jest.spyOn(rateService, 'getRate').mockRejectedValue(new Error('Crypto not found'));
+    jest
+      .spyOn(rateService, 'getRate')
+      .mockRejectedValue(new Error('Crypto not found'));
 
     const response = await request(app.getHttpServer())
       .get('/nonexistentcrypto')
