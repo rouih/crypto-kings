@@ -15,15 +15,15 @@ import {
   getTotalBalanceDto,
   RebalanceDto,
 } from './dto/balances.dto';
-import { LoggerService } from 'libs/shared/src/logger/winston-logger';
-import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
-import { BadRequestException } from '@app/shared/error-handling/exceptions/bad-request.exception';
+import { LoggerService } from '../../../../libs/shared/src/logger/winston-logger';
+import { InternalServerException } from '../../../../libs/shared/src/error-handling/exceptions/internal-server.exception';
+import { BadRequestException } from '../../../../libs/shared/src/error-handling/exceptions/bad-request.exception';
 import {
   AssetMap,
   WalletMap,
-} from 'apps/balance-service/src/balances/entities/balance.entity';
-import { UserId } from '@app/shared/decorators/user-id.decorator';
-import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
+} from '../../../../apps/balance-service/src/balances/entities/balance.entity';
+import { UserId } from '../../../../libs/shared/src/decorators/user-id.decorator';
+import { ErrorHandlerService } from '../../../../libs/shared/src/error-handling/src/error-handling.service';
 
 @Controller('balances')
 export class BalancesController {
@@ -32,7 +32,7 @@ export class BalancesController {
     @Inject(LoggerService) private readonly logger: LoggerService,
     @Inject(ErrorHandlerService)
     private readonly errorHandlingService: ErrorHandlerService,
-  ) {}
+  ) { }
 
   @Post()
   async addBalance(

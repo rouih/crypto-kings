@@ -15,13 +15,13 @@
     "start:debug": "nest start --debug --watch",
     "start:dev:balance": "nest start balance-service --debug --watch",
     "start:dev:rate": "nest start rate-service --debug --watch",
-    "start:prod": "node dist/apps/crypto-kings/main",
+    "start:prod": "node dist/apps/balance-service/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/crypto-kings/test/jest-e2e.json"
+    "test:e2e": "jest --config  ./apps/rate-service/test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/axios": "^3.1.2",

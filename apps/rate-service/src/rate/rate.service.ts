@@ -2,13 +2,11 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import * as dotenv from 'dotenv';
-import { CacheService } from 'libs/shared/src/cache/cache.service';
+import { CacheService } from '../../../../libs/shared/src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
-import { LoggerService } from '@app/shared/logger/winston-logger';
-import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
+import { LoggerService } from '../../../../libs/shared/src/logger/winston-logger';
+import { ErrorHandlerService } from '../../../../libs/shared/src/error-handling/src/error-handling.service';
 
-dotenv.config();
 
 @Injectable()
 export class RateService implements OnModuleInit {
