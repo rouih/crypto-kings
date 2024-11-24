@@ -31,7 +31,8 @@ describe('RateService', () => {
 
     const configServiceMock = {
       get: jest.fn().mockImplementation((key: string) => {
-        if (key === 'COINGECKO_URI') return 'https://api.coingecko.com/api/v3/simple/price';
+        if (key === 'COINGECKO_URI')
+          return 'https://api.coingecko.com/api/v3/simple/price';
         if (key === 'COINGECKO_IDS') return 'bitcoin';
         if (key === 'COINGECKO_CURRENCIES') return 'usd';
         return null;
@@ -59,11 +60,11 @@ describe('RateService', () => {
     jest.spyOn(cacheService, 'get').mockResolvedValue(undefined);
 
     await expect(rateService.getRate('bitcoin', 'usd')).rejects.toThrow(
-      'Rate for bitcoin in usd is not available'
+      'Rate for bitcoin in usd is not available',
     );
 
     expect(errorHandlerService.handleNotFound).toHaveBeenCalledWith(
-      'Rate for bitcoin in usd is not available'
+      'Rate for bitcoin in usd is not available',
     );
   });
 });

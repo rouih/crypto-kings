@@ -5,4 +5,4 @@ import { ErrorHandlerService } from './error-handling.service';
   providers: [ErrorHandlerService],
   exports: [ErrorHandlerService],
 })
-export class ErrorHandlerModule { }
+export class ErrorHandlerModule {}
