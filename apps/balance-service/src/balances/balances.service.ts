@@ -1,8 +1,8 @@
 import { Inject, Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { AssetMap, WalletMap } from './entities/balance.entity';
-import { IBalancesService } from '@app/shared/interfaces/balance-service.interface';
-import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
+import { IBalancesService } from '../../../../libs/shared/src/interfaces/balance-service.interface';
+import { ErrorHandlerService } from '../../../../libs/shared/src/error-handling/src/error-handling.service';
 import { Decimal } from 'decimal.js';
 @Injectable()
 export class BalancesService implements IBalancesService {
@@ -11,7 +11,7 @@ export class BalancesService implements IBalancesService {
     private readonly balancesRepository: BalancesRepository,
     @Inject(ErrorHandlerService)
     private readonly errorHandlerService: ErrorHandlerService,
-  ) {}
+  ) { }
 
   async rebalance(
     userId: string,
