@@ -1,11 +1,9 @@
 import { Inject, Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { AssetMap, WalletMap } from './entities/balance.entity';
-import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
 import { IBalancesService } from '@app/shared/interfaces/balance-service.interface';
-import { BadRequestException } from '@app/shared/error-handling/src';
 import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
-
+import { Decimal } from 'decimal.js';
 @Injectable()
 export class BalancesService implements IBalancesService {
 
@@ -32,10 +30,10 @@ export class BalancesService implements IBalancesService {
   async addBalance(userId: string, asset: string, amount: number): Promise<void> {
     try {
       const userBalances = await this.balancesRepository.getAllUserBalances(userId);
-      if (!userBalances[asset]) {
-        userBalances[asset] = 0;
-      }
-      userBalances[asset] += Number(amount)
+      const currentBalance = new Decimal(userBalances[asset] || 0);
+      const newBalance = currentBalance.plus(amount);
+
+      userBalances[asset] = newBalance.toNumber();
 
       await this.balancesRepository.saveUserBalances(userId, userBalances);
     } catch (error) {
@@ -45,31 +43,34 @@ export class BalancesService implements IBalancesService {
   }
 
   async deductBalance(userId: string, asset: string, amount: number): Promise<void> {
-    const userBalances: AssetMap = await this.balancesRepository.getAllUserBalances(userId);
-    for (const [key] of Object.entries(userBalances)) {
-      if (key !== asset) {
-        continue;
-      }
-      const currBalance = userBalances[key];
-      if (currBalance < amount) {
-        this.errorHandlerService.handleBadRequest('Not enough balance');
-      }
-      userBalances[key] -= amount;
+    const userBalances = await this.balancesRepository.getAllUserBalances(userId);
+    const currentBalance = new Decimal(userBalances[asset] || 0);
+
+    if (currentBalance.lessThan(amount)) {
+      this.errorHandlerService.handleInsufficiantBalance(`Not enough balance for ${asset}`);
     }
+
+    const newBalance = currentBalance.minus(amount);
+    userBalances[asset] = newBalance.toNumber();
     await this.balancesRepository.saveUserBalances(userId, userBalances);
   }
 
   async calculateTotalBalance(userId: string, rates: Record<string, number>, targetCurrency: string): Promise<number> {
     const userBalances = await this.balancesRepository.getAllUserBalances(userId);
-    let total = 0;
+    let total = new Decimal(0);
 
     for (const [currency, amount] of Object.entries(userBalances)) {
       if (!rates[currency]) {
-        this.errorHandlerService.handleNotFound(`Missing rate for currency: ${currency}`);
+        this.errorHandlerService.handleRateNotFound(`Missing rate for currency: ${currency}`);
       }
-      total += amount[currency] * rates[currency];
+      total = total.plus(new Decimal(amount).times(rates[currency]));
     }
 
-    return total / rates[targetCurrency];
+    const targetRate = new Decimal(rates[targetCurrency]);
+    if (targetRate.isZero()) {
+      this.errorHandlerService.handleRateNotFound(`Rate is zero for currency: ${targetCurrency}`);
+    }
+
+    return total.dividedBy(targetRate).toNumber();
   }
 }

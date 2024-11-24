@@ -23,7 +23,7 @@ export class ErrorHandlerService {
         throw new UnauthorizedException(message);
     }
 
-    notEnoughBalanceError(message: string): void {
+    handleInsufficiantBalance(message: string): void {
         throw new insufficientBalanceError(message);
     }
 
@@ -31,6 +31,16 @@ export class ErrorHandlerService {
         throw new fileError(`Failed to write to file: ${error.message}`);
     }
 
+    handleRateNotFound(message: string): void {
+        throw new rateNotFoundError(message);
+    }
+
+}
+
+class rateNotFoundError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
 }
 
 class fileError extends Error {
