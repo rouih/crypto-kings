@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { BadRequestException } from '../error-handling/src';
+import { BadRequestException } from '../error-handling/exceptions/custom-exceptions.exeption'
 
 export const UserId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): string => {

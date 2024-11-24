@@ -7,10 +7,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { RateService } from './rate.service';
+import { NotFoundException } from '../../../../libs/shared/src/error-handling/exceptions/custom-exceptions.exeption';
 
 @Controller()
 export class RateServiceController {
-  constructor(private readonly rateService: RateService) {}
+  constructor(private readonly rateService: RateService) { }
 
   @Get(':crypto')
   async getRate(
@@ -20,7 +21,7 @@ export class RateServiceController {
     try {
       return { rate: await this.rateService.getRate(crypto, currency) };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(error.message);
     }
   }
 }

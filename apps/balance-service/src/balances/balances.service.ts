@@ -11,7 +11,7 @@ export class BalancesService implements IBalancesService {
     private readonly balancesRepository: BalancesRepository,
     @Inject(ErrorHandlerService)
     private readonly errorHandlerService: ErrorHandlerService,
-  ) { }
+  ) {}
 
   async rebalance(
     userId: string,

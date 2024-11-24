@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import {
-  BadRequestException,
-  NotFoundException,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+  BadRequestException, InternalServerException, NotFoundException, UnauthorizedException,
+  FileIOError,
+  RateNotFoundError,
+  UpdateBalancesError,
+  InsufficientBalanceError
+} from '../../error-handling/exceptions/custom-exceptions.exeption';
 
 @Injectable()
 export class ErrorHandlerService {
@@ -17,7 +18,7 @@ export class ErrorHandlerService {
   }
 
   handleInternalServerError(message: string): void {
-    throw new InternalServerErrorException(message);
+    throw new InternalServerException(message);
   }
 
   handleValidationError(message: string): void {
@@ -29,32 +30,25 @@ export class ErrorHandlerService {
   }
 
   handleInsufficiantBalance(message: string): void {
-    throw new insufficientBalanceError(message);
+    throw new InsufficientBalanceError(message);
   }
 
   handleWriteFileError(error: Error): void {
-    throw new fileError(`Failed to write to file: ${error.message}`);
+    throw new FileIOError(`Failed to write to file: ${error.message}`);
   }
 
   handleRateNotFound(message: string): void {
-    throw new rateNotFoundError(message);
+    throw new RateNotFoundError(message);
   }
+
+  handleUpdateBalancesError(message: string): void {
+    throw new UpdateBalancesError(message);
+  }
+
+  handleGetBalancesError(message: string): void {
+    throw new NotFoundException(message);
+  }
+
 }
 
-class rateNotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
 
-class fileError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-class insufficientBalanceError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
