@@ -1,107 +1,134 @@
-import { Controller, Post, Body, Headers, Delete, Get, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Put,
+  Body,
+  Get,
+  Query,
+  Inject,
+} from '@nestjs/common';
 import { BalancesService } from './balances.service';
-import { CreateBalanceDto } from './dto/create-balance.dto';
-import logger from '@app/shared/logger/winston-logger';
-import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
-import { BadRequestException } from 'libs/error-handling/exceptions/bad-request.exception';
-import { AssetMap, WalletMap } from 'libs/shared/entities/balance.entity';
-import { IBalanceController } from 'libs/shared/interfaces/balance-controller.interface';
+import {
+  CreateBalanceDto,
+  DeductBalanceDto,
+  getBalancesDto,
+  getTotalBalanceDto,
+  RebalanceDto,
+} from './dto/balances.dto';
+import { LoggerService } from 'libs/shared/src/logger/winston-logger';
+import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
+import { BadRequestException } from '@app/shared/error-handling/exceptions/bad-request.exception';
+import {
+  AssetMap,
+  WalletMap,
+} from 'apps/balance-service/src/balances/entities/balance.entity';
+import { UserId } from '@app/shared/decorators/user-id.decorator';
+import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
 
 @Controller('balances')
-export class BalancesController implements IBalanceController {
-  constructor(private readonly balancesService: BalancesService) { }
+export class BalancesController {
+  constructor(
+    @Inject(BalancesService) private readonly balancesService: BalancesService,
+    @Inject(LoggerService) private readonly logger: LoggerService,
+    @Inject(ErrorHandlerService)
+    private readonly errorHandlingService: ErrorHandlerService,
+  ) {}
 
-
-  @Post('add')
+  @Post()
   async addBalance(
-    @Headers('X-User-ID') userId: string,
-    @Body() body: { asset: string; amount: number },
+    @UserId() userId: string,
+    @Body() createBalanceDto: CreateBalanceDto,
   ): Promise<{ message: string }> {
     try {
-      if (!body.asset || body.asset.length === 0) {
-        throw new BadRequestException('Missing asset or asset is empty');
-      }
-      await this.balancesService.addBalance(new CreateBalanceDto(userId, body.asset, body.amount));
-      return { message: `Balance ${body.asset} added successfully` };
+      await this.balancesService.addBalance(
+        userId,
+        createBalanceDto.asset,
+        createBalanceDto.amount,
+      );
+      return {
+        message: `Balance ${createBalanceDto.asset} added successfully`,
+      };
     } catch (error) {
-      logger.error('Error adding balance:', error);
+      this.logger.error('Error adding balance:', error);
       throw new InternalServerException(error);
     }
   }
 
   @Post('/rebalance')
   async rebalance(
-    @Headers('X-User-ID') userId: string,
-    @Body() targetPercentages: Record<string, number>,
-    @Query('baseCurrency') baseCurrency = 'usd',
+    @UserId() userId: string,
+    @Body() rebalanceDto: RebalanceDto,
   ): Promise<{ message: string }> {
     try {
-      const totalPercentage = Object.values(targetPercentages).reduce((sum, p) => sum + p, 0);
+      const totalPercentage = Object.values(
+        rebalanceDto.targetPercentages,
+      ).reduce((sum, p) => sum + p, 0);
       if (totalPercentage !== 100) {
         throw new BadRequestException('Target percentages must sum to 100');
       }
-      await this.balancesService.rebalance(userId, targetPercentages, baseCurrency);
+      await this.balancesService.rebalance(
+        userId,
+        rebalanceDto.targetPercentages,
+        rebalanceDto.baseCurrency,
+      );
       return { message: 'Balances rebalanced successfully' };
     } catch (error) {
       throw new InternalServerException(error);
     }
   }
 
-
-  @Delete('remove')
-  async removeBalance(
-    @Headers('X-User-ID') userId: string,
-    @Body() body: { amount: number },
-    @Query('asset') asset: string,
+  @Put()
+  async deductBalance(
+    @UserId() userId: string,
+    @Body() deductBalanceDto: DeductBalanceDto,
   ): Promise<{ message: string }> {
     try {
-      if (!asset || asset.length === 0) {
-        throw new BadRequestException('Missing asset or asset is empty');
-      }
-      await this.balancesService.removeBalance(userId, asset, +body.amount);
+      await this.balancesService.deductBalance(
+        userId,
+        deductBalanceDto.asset,
+        deductBalanceDto.amount,
+      );
       return { message: 'Balance removed successfully' };
     } catch (error) {
-      logger.error('Error removing balance:', error);
+      this.logger.error('Error removing balance:', error);
       throw new InternalServerException(error);
     }
   }
-
 
   @Get()
-  async getBalances(@Headers('X-User-ID') userId: string): Promise<WalletMap> {
+  async getBalances(
+    @Query() userDto?: getBalancesDto,
+  ): Promise<WalletMap | AssetMap> {
     try {
+      if (userDto.userId) {
+        // Return balances specific to the user
+        this.logger.trace('Retrieving balances for user ' + userDto.userId);
+        return await this.balancesService.getAllUserBalances(userDto.userId);
+      }
+      // Return all balances if no userId is provided
+      this.logger.trace('Retrieving all balances');
       return await this.balancesService.getAllBalances();
     } catch (error) {
-      logger.error('Error retrieving all balances:', error);
-      throw new InternalServerException(error);
-    }
-  }
-
-  @Get('userBalance')
-  async getUserBalance(@Headers('X-User-ID') userId: string): Promise<AssetMap> {
-    try {
-      if (!userId || userId.length === 0) {
-        throw new BadRequestException('Missing userId or userId is empty');
-      }
-      return await this.balancesService.getAllUserBalances(userId);
-    } catch (error) {
-      logger.error(`Error retrieving balances for user ${userId}:`, error);
+      this.logger.error('Error retrieving balances:', error);
       throw new InternalServerException(error);
     }
   }
 
   @Get('total')
   async getTotalBalance(
-    @Headers('X-User-ID') userId: string,
-    @Query('currency') targetCurrency: string,
+    @UserId() userId: string,
+    @Body() getTotalBalanceDto: getTotalBalanceDto,
   ): Promise<number> {
     try {
-      if (!targetCurrency || targetCurrency.length === 0) {
-        throw new BadRequestException('Missing currency or currency is empty');
-      }
-      return await this.balancesService.getUserBalancesInCurrency(userId, targetCurrency);
+      return await this.balancesService.getUserBalancesInCurrency(
+        userId,
+        getTotalBalanceDto.targetCurrency,
+      );
     } catch (error) {
-      logger.error(`Error retrieving total balance for user ${userId} in ${targetCurrency}:`, error);
+      this.logger.error(
+        `Error retrieving total balance for user ${userId} in ${getTotalBalanceDto.targetCurrency}:`,
+        error,
+      );
       throw new InternalServerException(error);
     }
   }

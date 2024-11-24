@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build: .
-    container_name: nestjs-app
+    container_name: crypto-kings
     ports:
       - '3000:3000' # Expose the app's port on the host machine
     environment:

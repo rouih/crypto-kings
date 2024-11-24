@@ -8,7 +8,7 @@
 
 ## Endpoints
 
-### **POST /balances/add**
+### \*\*POST /balances
 
 #### Description
 
@@ -129,12 +129,15 @@ To install the **Wallet Management API**, follow these steps:
    ```bash
    npm run start
    ```
+
    Rate Service
+
    ```bash
    npm run start:rate-service
    ```
 
    Balance Service
+
    ```bash
    npm run start:balance-service
    ```
@@ -204,6 +207,3 @@ Contributions are welcome! If you find a bug or have a suggestion, please open a
 ## License
 
 This project is licensed under the MIT License.
-
-
-
