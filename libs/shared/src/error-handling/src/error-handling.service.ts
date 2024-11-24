@@ -26,4 +26,5 @@ export class ErrorHandlerService {
     notEnoughBalanceError(message: string): void {
         throw new BadRequestException(message);
     }
+
 }
