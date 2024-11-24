@@ -11,10 +11,10 @@ import { RequestIdMiddleware } from '@app/shared/middlewares/request-id.middlewa
 import { ErrorHandlerModule } from '@app/shared/error-handling/src';
 
 @Module({
-  imports: [SharedModule, CacheSharedModule, FileModule, ConfigModule.forRoot({
+  imports: [SharedModule, ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: '../../../.env'
-  }), LoggerModule, ErrorHandlerModule],
+  })],
   controllers: [BalancesController],
   providers: [BalancesRepository, BalancesService],
 })

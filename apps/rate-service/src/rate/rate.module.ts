@@ -8,6 +8,7 @@ import { CacheSharedModule } from 'libs/shared/src/cache/cache.module';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@app/shared/logger/logger.module';
 import { RequestIdMiddleware } from '@app/shared/middlewares/request-id.middleware';
+import { SharedModule } from '@app/shared';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -15,9 +16,8 @@ import { RequestIdMiddleware } from '@app/shared/middlewares/request-id.middlewa
       envFilePath: '../../../.env'
     }),
     HttpModule,
-    CacheSharedModule,
     ScheduleModule.forRoot(),
-    LoggerModule,
+    SharedModule
   ],
   controllers: [RateServiceController],
   providers: [RateService],
