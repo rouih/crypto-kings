@@ -7,18 +7,21 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import * as dotenv from 'dotenv'
 import logger from 'libs/shared/src/logger/winston-logger';
 import { CacheService } from 'libs/shared/src/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 dotenv.config();
 @Injectable()
 export class RateService implements OnModuleInit {
-    private readonly coingeckoApiUrl = process.env.COINGECKO_URI || 'https://api.coingecko.com/api/v3/simple/price';
-    private readonly coinGeckoIds = process.env.COINGECKO_IDS || 'bitcoin';
-    private readonly coinGeckoCurrencies = process.env.COINGECKO_CURRENCIES || 'usd'
-
     constructor(
         private readonly httpService: HttpService,
-        private readonly cacheService: CacheService,
+        @Inject(CacheService) private readonly cacheService: CacheService,
+        @Inject(ConfigService) private readonly configService: ConfigService,
     ) { }
+    private readonly coingeckoApiUrl = this.configService.get<string>('COINGECKO_URI') || 'https://api.coingecko.com/api/v3/simple/price';
+    private readonly coinGeckoIds = this.configService.get<string>('COINGECKO_IDS') || 'bitcoin';
+    private readonly coinGeckoCurrencies = this.configService.get('COINGECKO_CURRENCIES') || 'usd'
+
+
 
     @Cron(CronExpression.EVERY_HOUR)
     async handleScheduledRateUpdate() {

@@ -1,6 +1,5 @@
 import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
-import { CreateBalanceDto } from './dto/balances.dto';
 import { AssetMap, WalletMap } from './entities/balance.entity';
 import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
 import { IBalancesService } from '@app/shared/interfaces/balance-service.interface';
