@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { NotFoundException } from '@app/error-handling';
+import { NotFoundException } from '@app/shared/error-handling/src';
 
 @Injectable()
 export class CacheService {

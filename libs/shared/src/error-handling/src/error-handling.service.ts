@@ -13,4 +13,8 @@ export class ErrorHandlerService {
     handleInternalServerError(message: string): void {
         throw new InternalServerException(message);
     }
+
+    notEnoughBalanceError(message: string): void {
+        throw new BadRequestException(message);
+    }
 }

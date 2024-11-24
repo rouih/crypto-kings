@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import { BalancesController } from './balances.controller';
 import { BalancesRepository } from './balances.repository';
-import { SharedModule } from '@app/shared';
-import { CacheSharedModule } from '@app/shared/cache/cache.module';
-import { FileModule } from '@app/shared/file/src';
+import { SharedModule } from 'libs/shared/src';
+import { CacheSharedModule } from 'libs/shared/src/cache/cache.module';
+import { FileModule } from 'libs/shared/src/file/src';
 
 @Module({
   imports: [SharedModule, CacheSharedModule, FileModule],

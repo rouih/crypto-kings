@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { RateServiceModule } from './rate/rate.module';
-import logger from '@app/shared/logger/winston-logger';
-import { HttpExceptionFilter } from '@app/error-handling/http-exception.filter';
+import logger from 'libs/shared/src/logger/winston-logger';
+import { HttpExceptionFilter } from '@app/shared/error-handling/src/http-exception.filter';
 
 
 async function bootstrap() {

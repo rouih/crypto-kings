@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RateService } from './rate.service';
-import { CacheService } from '@app/shared/cache/cache.service';
+import { CacheService } from 'libs/shared/src/cache/cache.service';
 import { HttpService } from '@nestjs/axios';
-import { of } from 'rxjs';
-import logger from '@app/shared/logger/winston-logger';
 
 describe('RateService', () => {
   let rateService: RateService;

@@ -1,9 +1,10 @@
 import { Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
-import { CreateBalanceDto } from './dto/create-balance.dto';
-import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.entity';
-import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
-import { IBalancesService } from 'libs/shared/interfaces/balance-service.interface';
+import { CreateBalanceDto } from './dto/balances.dto';
+import { AssetMap, WalletMap } from './entities/balance.entity';
+import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
+import { IBalancesService } from '@app/shared/interfaces/balance-service.interface';
+import { BadRequestException } from '@app/shared/error-handling/src';
 
 @Injectable()
 export class BalancesService implements IBalancesService {
@@ -27,8 +28,7 @@ export class BalancesService implements IBalancesService {
     return this.balancesRepository.getAllBalances();
   }
 
-  async addBalance(addBalanceDto: CreateBalanceDto): Promise<void> {
-    const { userId, asset, amount } = addBalanceDto;
+  async addBalance(userId: string, asset: string, amount: number): Promise<void> {
     try {
       const userBalances = await this.balancesRepository.getAllUserBalances(userId);
       if (!userBalances[asset]) {
@@ -42,11 +42,15 @@ export class BalancesService implements IBalancesService {
 
   }
 
-  async removeBalance(userId: string, asset: string, amount: number): Promise<void> {
+  async deductBalance(userId: string, asset: string, amount: number): Promise<void> {
     const userBalances: AssetMap = await this.balancesRepository.getAllUserBalances(userId);
     for (const [key] of Object.entries(userBalances)) {
       if (key !== asset) {
         continue;
+      }
+      const currBalance = userBalances[key];
+      if (currBalance < amount) {
+        throw new BadRequestException('Not enough balance');
       }
       userBalances[key] -= amount;
     }

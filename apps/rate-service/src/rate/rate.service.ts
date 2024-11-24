@@ -5,8 +5,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as dotenv from 'dotenv'
-import logger from '@app/shared/logger/winston-logger';
-import { CacheService } from '@app/shared/cache/cache.service';
+import logger from 'libs/shared/src/logger/winston-logger';
+import { CacheService } from 'libs/shared/src/cache/cache.service';
 
 dotenv.config();
 @Injectable()

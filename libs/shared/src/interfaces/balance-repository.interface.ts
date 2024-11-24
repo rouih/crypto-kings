@@ -5,9 +5,5 @@ export interface IBalancesRepository {
     addBalance(userId: string, asset: string, amount: number): Promise<void>;
     saveUserBalances(userId: string, balances: any): Promise<void>;
     getUserTotalCurrencyBalance(userId: string, targetCurrency: string): Promise<number>;
-    rebalanceUserBalances(
-        userId: string,
-        targetPercentages: Record<string, number>,
-        baseCurrency: string,
-    ): Promise<void>;
+    rebalanceUserBalances(userId: string, targetPercentages: Record<string, number>, baseCurrency: string): Promise<void>;
 }

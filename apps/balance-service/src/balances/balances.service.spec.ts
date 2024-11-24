@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BalancesService } from './balances.service';
 import { BalancesRepository } from './balances.repository';
-import { CreateBalanceDto } from './dto/create-balance.dto';
-import { AssetMap } from '../../../../libs/shared/entities/balance.entity';
-import { CacheService } from '@app/shared/cache/cache.service';
+import { CreateBalanceDto } from './dto/balances.dto';
+import { AssetMap } from './entities/balance.entity';
+import { CacheService } from 'libs/shared/src/cache/cache.service';
 
 describe('BalancesService', () => {
     let balancesService: BalancesService;
@@ -54,7 +54,7 @@ describe('BalancesService', () => {
         jest.spyOn(balancesRepository, 'getAllUserBalances').mockResolvedValue(mockUserBalances);
         jest.spyOn(balancesRepository, 'saveUserBalances').mockResolvedValue(undefined);
 
-        await balancesService.addBalance(addBalanceDto);
+        await balancesService.addBalance(addBalanceDto.userId, addBalanceDto.asset, addBalanceDto.amount);
 
         // Check if the balances are correctly updated
         expect(balancesRepository.getAllUserBalances).toHaveBeenCalledWith('123');

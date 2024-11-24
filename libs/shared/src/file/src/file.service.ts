@@ -1,4 +1,4 @@
-import { InternalServerException, NotFoundException } from '@app/error-handling';
+import { InternalServerException, NotFoundException } from '@app/shared/error-handling/src';
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';

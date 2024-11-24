@@ -1,22 +1,19 @@
 import { Inject, Injectable, Next } from '@nestjs/common';
 import * as path from 'path';
-import { AssetMap, WalletMap } from '../../../../libs/shared/entities/balance.entity';
-import { CacheService } from '@app/shared/cache/cache.service';
-import { FileService } from '@app/shared/file/src';
+import { AssetMap, WalletMap } from './entities/balance.entity';
+import { CacheService } from 'libs/shared/src/cache/cache.service';
+import { FileService } from 'libs/shared/src/file/src';
 import { configDotenv } from 'dotenv';
-import logger from '@app/shared/logger/winston-logger';
-import { NotFoundException } from 'libs/error-handling/exceptions/exceptions.index';
-import { InternalServerException } from 'libs/error-handling/exceptions/internal-server.exception';
-import { IBalancesRepository } from 'libs/shared/interfaces/balance-repository.interface';
+import logger from 'libs/shared/src/logger/winston-logger';
+import { NotFoundException } from '@app/shared/error-handling/exceptions/exceptions.index';
+import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
+import { IBalancesRepository } from '@app/shared/interfaces/balance-repository.interface';
 
 configDotenv();
 
 @Injectable()
 export class BalancesRepository implements IBalancesRepository {
-    constructor(
-        @Inject(CacheService) private readonly cacheService: CacheService,
-        @Inject(FileService) private readonly fileService: FileService
-    ) {
+    constructor(@Inject(CacheService) private readonly cacheService: CacheService, @Inject(FileService) private readonly fileService: FileService) {
     }
 
 
@@ -49,8 +46,8 @@ export class BalancesRepository implements IBalancesRepository {
 
     async getAllUserBalances(userId: string): Promise<AssetMap> {
         const balances = await this.getAllBalances();
-        if (!balances) {
-            throw new NotFoundException(`User ${userId} not found`);
+        if (!balances || !balances[userId]) {
+            throw new NotFoundException(`User not found or no balances available`);
         }
         return balances[userId];
     }
