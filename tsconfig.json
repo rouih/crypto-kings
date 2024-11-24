@@ -19,24 +19,12 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app/shared": [
-        "libs/shared/src"
-      ],
-      "@app/shared/*": [
-        "libs/shared/src/*"
-      ],
-      "@app/file": [
-        "libs/shared/file/src"
-      ],
-      "@app/file/*": [
-        "libs/shared/file/src/*"
-      ],
-      "@app/error-handling": [
-        "libs/error-handling/src"
-      ],
-      "@app/error-handling/*": [
-        "libs/error-handling/src/*"
-      ]
+      "@app/shared": ["libs/shared/src"],
+      "@app/shared/*": ["libs/shared/src/*"],
+      "@app/file": ["libs/shared/file/src"],
+      "@app/file/*": ["libs/shared/file/src/*"],
+      "@app/error-handling": ["libs/shared/src/error-handling/src"],
+      "@app/error-handling/*": ["libs/shared/src/error-handling/src/*"]
     }
   }
 }
