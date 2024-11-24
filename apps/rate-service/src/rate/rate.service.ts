@@ -6,6 +6,7 @@ import * as dotenv from 'dotenv'
 import { CacheService } from 'libs/shared/src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@app/shared/logger/winston-logger';
+import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
 
 dotenv.config();
 @Injectable()
@@ -14,7 +15,8 @@ export class RateService implements OnModuleInit {
         private readonly httpService: HttpService,
         @Inject(CacheService) private readonly cacheService: CacheService,
         @Inject(ConfigService) private readonly configService: ConfigService,
-        @Inject(LoggerService) private readonly logger: LoggerService) { }
+        @Inject(LoggerService) private readonly logger: LoggerService,
+        @Inject(ErrorHandlerService) private readonly errorHandlerService: ErrorHandlerService) { }
     private readonly coingeckoApiUrl = this.configService.get<string>('COINGECKO_URI') || 'https://api.coingecko.com/api/v3/simple/price';
     private readonly coinGeckoIds = this.configService.get<string>('COINGECKO_IDS') || 'bitcoin';
     private readonly coinGeckoCurrencies = this.configService.get('COINGECKO_CURRENCIES') || 'usd'
@@ -23,8 +25,8 @@ export class RateService implements OnModuleInit {
 
     @Cron(CronExpression.EVERY_HOUR)
     async handleScheduledRateUpdate() {
-        console.log('Updating rates...');
         await this.updateRates();
+        this.logger.log('Rates updated successfully');
     }
 
     async onModuleInit() {
@@ -44,7 +46,7 @@ export class RateService implements OnModuleInit {
     async getRate(crypto: string, currency?: string): Promise<number> {
         const rate = await this.cacheService.get(crypto); //prints undefined
         if (!rate) {
-            throw new Error(`Rate for ${crypto} not available`);
+            this.errorHandlerService.handleNotFound(`Rate for ${crypto} not available`);
         }
         return currency ? rate[currency] : rate;
     }
