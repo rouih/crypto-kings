@@ -1,14 +1,16 @@
-import { Injectable, Next } from '@nestjs/common';
+import { Inject, Injectable, Next } from '@nestjs/common';
 import { BalancesRepository } from './balances.repository';
 import { AssetMap, WalletMap } from './entities/balance.entity';
 import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
 import { IBalancesService } from '@app/shared/interfaces/balance-service.interface';
 import { BadRequestException } from '@app/shared/error-handling/src';
+import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
 
 @Injectable()
 export class BalancesService implements IBalancesService {
 
-  constructor(private readonly balancesRepository: BalancesRepository) { }
+  constructor(@Inject(BalancesRepository) private readonly balancesRepository: BalancesRepository,
+    @Inject(ErrorHandlerService) private readonly errorHandlerService: ErrorHandlerService) { }
 
 
   async rebalance(userId: string, targetPercentages: Record<string, number>, baseCurrency = 'usd'): Promise<void> {
@@ -49,7 +51,7 @@ export class BalancesService implements IBalancesService {
       }
       const currBalance = userBalances[key];
       if (currBalance < amount) {
-        throw new BadRequestException('Not enough balance');
+        this.errorHandlerService.handleBadRequest('Not enough balance');
       }
       userBalances[key] -= amount;
     }
@@ -62,7 +64,7 @@ export class BalancesService implements IBalancesService {
 
     for (const [currency, amount] of Object.entries(userBalances)) {
       if (!rates[currency]) {
-        throw new InternalServerException(`Missing rate for currency: ${currency}`);
+        this.errorHandlerService.handleNotFound(`Missing rate for currency: ${currency}`);
       }
       total += amount[currency] * rates[currency];
     }

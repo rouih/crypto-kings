@@ -8,12 +8,13 @@ import { FileModule } from 'libs/shared/src/file/src';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@app/shared/logger/logger.module';
 import { RequestIdMiddleware } from '@app/shared/middlewares/request-id.middleware';
+import { ErrorHandlerModule } from '@app/shared/error-handling/src';
 
 @Module({
   imports: [SharedModule, CacheSharedModule, FileModule, ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: '../../../.env'
-  }), LoggerModule],
+  }), LoggerModule, ErrorHandlerModule],
   controllers: [BalancesController],
   providers: [BalancesRepository, BalancesService],
 })

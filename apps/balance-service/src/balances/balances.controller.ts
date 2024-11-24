@@ -6,11 +6,13 @@ import { InternalServerException } from '@app/shared/error-handling/exceptions/i
 import { BadRequestException } from '@app/shared/error-handling/exceptions/bad-request.exception';
 import { AssetMap, WalletMap } from 'apps/balance-service/src/balances/entities/balance.entity';
 import { UserId } from '@app/shared/decorators/user-id.decorator';
+import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
 
 @Controller('balances')
 export class BalancesController {
   constructor(@Inject(BalancesService) private readonly balancesService: BalancesService,
-    @Inject(LoggerService) private readonly logger: LoggerService) { }
+    @Inject(LoggerService) private readonly logger: LoggerService,
+    @Inject(ErrorHandlerService) private readonly errorHandlingService: ErrorHandlerService) { }
 
 
   @Post()

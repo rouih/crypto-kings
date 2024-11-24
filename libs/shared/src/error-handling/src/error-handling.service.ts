@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BadRequestException, InternalServerException, NotFoundException } from '../exceptions/exceptions.index';
+import { BadRequestException, NotFoundException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+
 @Injectable()
 export class ErrorHandlerService {
     handleNotFound(message: string): void {
@@ -11,7 +12,15 @@ export class ErrorHandlerService {
     }
 
     handleInternalServerError(message: string): void {
-        throw new InternalServerException(message);
+        throw new InternalServerErrorException(message);
+    }
+
+    handleValidationError(message: string): void {
+        throw new BadRequestException(`Validation failed: ${message}`);
+    }
+
+    handleUnauthorized(message: string): void {
+        throw new UnauthorizedException(message);
     }
 
     notEnoughBalanceError(message: string): void {

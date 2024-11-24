@@ -1,24 +1,28 @@
-import { Inject, Injectable, Next } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import { AssetMap, WalletMap } from './entities/balance.entity';
 import { CacheService } from 'libs/shared/src/cache/cache.service';
 import { FileService } from 'libs/shared/src/file/src';
-import { NotFoundException } from '@app/shared/error-handling/exceptions/exceptions.index';
-import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
-import { IBalancesRepository } from '@app/shared/interfaces/balance-repository.interface';
 import { LoggerService } from '@app/shared/logger/winston-logger';
 import { ConfigService } from '@nestjs/config';
-
+import { ErrorHandlerService } from '@app/shared/error-handling/src/error-handling.service';
+import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
+import { NotFoundException } from '@app/shared/error-handling/exceptions/exceptions.index';
+import { BadRequestException } from '@app/shared/error-handling/exceptions/bad-request.exception';
+import { IBalancesRepository } from '@app/shared/interfaces/balance-repository.interface';
 
 @Injectable()
 export class BalancesRepository implements IBalancesRepository {
-    constructor(@Inject(CacheService) private readonly cacheService: CacheService,
-        @Inject(FileService) private readonly fileService: FileService, @Inject(LoggerService) private readonly logger: LoggerService,
-        @Inject(ConfigService) private readonly configService: ConfigService) { }
+    constructor(
+        @Inject(CacheService) private readonly cacheService: CacheService,
+        @Inject(FileService) private readonly fileService: FileService,
+        @Inject(LoggerService) private readonly logger: LoggerService,
+        @Inject(ConfigService) private readonly configService: ConfigService,
+        @Inject(ErrorHandlerService) private readonly errorHandlerService: ErrorHandlerService
+    ) { }
 
     private readonly filePath = path.resolve(__dirname, this.configService.get<string>('BALANCES_FILE_PATH') || '../../../data/balances.json');
     private readonly cacheKey = 'balances'; // Key to store data in cache
-
 
     // Load all balances from file into cache (if not already loaded)
     private async loadBalancesIntoCache(): Promise<void> {
@@ -32,7 +36,7 @@ export class BalancesRepository implements IBalancesRepository {
                     // File doesn't exist, return an empty object
                     await this.cacheService.set(this.cacheKey, {});
                 } else {
-                    throw new InternalServerException('Error loading balances from file');
+                    this.errorHandlerService.handleInternalServerError('Error loading balances from file');
                 }
             }
         }
@@ -47,10 +51,11 @@ export class BalancesRepository implements IBalancesRepository {
     async getAllUserBalances(userId: string): Promise<AssetMap> {
         const balances = await this.getAllBalances();
         if (!balances || !balances[userId]) {
-            throw new NotFoundException(`User not found or no balances available`);
+            this.errorHandlerService.handleNotFound('User not found or no balances available');
         }
         return balances[userId];
     }
+
     async addBalance(userId: string, asset: string, amount: number): Promise<void> {
         const userBalances = await this.getAllUserBalances(userId);
         userBalances[asset] = (userBalances[asset] || 0) + amount;
@@ -72,7 +77,7 @@ export class BalancesRepository implements IBalancesRepository {
         const rate = await this.cacheService.get<number>(`${asset}-${targetCurrency}`);
         if (!rate) {
             this.logger.error(`Rate for asset ${asset} and target currency ${targetCurrency} is not available`);
-            throw new InternalServerException(`Rate for asset ${asset} and target currency ${targetCurrency} is not available`);
+            this.errorHandlerService.handleInternalServerError(`Rate for asset ${asset} and target currency ${targetCurrency} is not available`);
         }
         return rate;
     }
@@ -81,14 +86,14 @@ export class BalancesRepository implements IBalancesRepository {
         // Ensure target percentages add up to 100
         const totalPercentage = Object.values(targetPercentages).reduce((sum, p) => sum + p, 0);
         if (totalPercentage !== 100) {
-            throw new Error('Target percentages must sum to 100');
+            this.errorHandlerService.handleBadRequest('Target percentages must sum to 100');
         }
 
         // Fetch user balances
         const userBalances = await this.getAllUserBalances(userId);
         if (!userBalances || Object.keys(userBalances).length === 0) {
             this.logger.error('No balances available for rebalancing');
-            throw new Error('No balances available for rebalancing');
+            this.errorHandlerService.handleNotFound('No balances available for rebalancing');
         }
 
         // Fetch rates for all assets
@@ -99,7 +104,7 @@ export class BalancesRepository implements IBalancesRepository {
             const rate = await this.cacheService.get<number>(cacheKey); // Fetch rate from cache
             if (!rate) {
                 this.logger.error(`Rate for asset ${asset} is not available`);
-                throw new Error(`Rate for asset ${asset} is not available`);
+                this.errorHandlerService.handleInternalServerError(`Rate for asset ${asset} is not available`);
             }
 
             const value = amount * rate;
@@ -114,7 +119,7 @@ export class BalancesRepository implements IBalancesRepository {
             const cacheKey = `${asset}-${baseCurrency}`;
             const rate = await this.cacheService.get<number>(cacheKey); // Fetch rate again
             if (!rate) {
-                throw new Error(`Rate for asset ${asset} is not available`);
+                this.errorHandlerService.handleInternalServerError(`Rate for asset ${asset} is not available`);
             }
 
             adjustedBalances[asset] = targetValue / rate; // Convert value to asset amount
