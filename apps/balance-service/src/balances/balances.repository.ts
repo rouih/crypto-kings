@@ -64,13 +64,17 @@ export class BalancesRepository implements IBalancesRepository {
     }
 
     async saveUserBalances(userId: string, balances: AssetMap): Promise<void> {
-        const allBalances = await this.getAllBalances();
+        try {
+            const allBalances = await this.getAllBalances();
+            // Update balances for the specific user
+            allBalances[userId] = balances;
 
-        // Update balances for the specific user
-        allBalances[userId] = balances;
+            await this.cacheService.set(this.cacheKey, allBalances);
+            await this.fileService.writeFile(this.filePath, allBalances);
+        } catch (error) {
+            this.errorHandlerService.handleWriteFileError(error);
+        }
 
-        await this.cacheService.set(this.cacheKey, allBalances);
-        await this.fileService.writeFile(this.filePath, allBalances);
     }
 
     async getRate(asset: string, targetCurrency: string): Promise<number> {

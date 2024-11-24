@@ -48,13 +48,13 @@ describe('BalancesService', () => {
     });
 
     it('should add balance correctly', async () => {
-        const addBalanceDto = new CreateBalanceDto('123', 'bitcoin', 10);
+        const addBalanceDto = new CreateBalanceDto('bitcoin', 10);
         const mockUserBalances = { bitcoin: 5, ethereum: 10 };
 
         jest.spyOn(balancesRepository, 'getAllUserBalances').mockResolvedValue(mockUserBalances);
         jest.spyOn(balancesRepository, 'saveUserBalances').mockResolvedValue(undefined);
 
-        await balancesService.addBalance(addBalanceDto.userId, addBalanceDto.asset, addBalanceDto.amount);
+        await balancesService.addBalance('1', addBalanceDto.asset, addBalanceDto.amount);
 
         // Check if the balances are correctly updated
         expect(balancesRepository.getAllUserBalances).toHaveBeenCalledWith('123');

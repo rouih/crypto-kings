@@ -24,7 +24,23 @@ export class ErrorHandlerService {
     }
 
     notEnoughBalanceError(message: string): void {
-        throw new BadRequestException(message);
+        throw new insufficientBalanceError(message);
     }
 
+    handleWriteFileError(error: Error): void {
+        throw new fileError(`Failed to write to file: ${error.message}`);
+    }
+
+}
+
+class fileError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+class insufficientBalanceError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
 }

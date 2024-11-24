@@ -36,6 +36,7 @@ export class BalancesService implements IBalancesService {
         userBalances[asset] = 0;
       }
       userBalances[asset] += Number(amount)
+
       await this.balancesRepository.saveUserBalances(userId, userBalances);
     } catch (error) {
       Next();

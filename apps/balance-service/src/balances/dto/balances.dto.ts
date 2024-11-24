@@ -1,16 +1,10 @@
 import { IsString, IsNumber, IsNotEmpty, Min, IsOptional } from 'class-validator';
 
 export class CreateBalanceDto {
-    constructor(userId: string, asset: string, amount: number) {
-        this.userId = userId;
+    constructor(asset: string, amount: number) {
         this.asset = asset;
         this.amount = amount;
     }
-
-    @IsString()
-    @IsNotEmpty()
-    readonly userId: string;
-
     @IsString()
     @IsNotEmpty()
 
