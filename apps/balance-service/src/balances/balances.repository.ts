@@ -3,22 +3,22 @@ import * as path from 'path';
 import { AssetMap, WalletMap } from './entities/balance.entity';
 import { CacheService } from 'libs/shared/src/cache/cache.service';
 import { FileService } from 'libs/shared/src/file/src';
-import { configDotenv } from 'dotenv';
-import logger from 'libs/shared/src/logger/winston-logger';
 import { NotFoundException } from '@app/shared/error-handling/exceptions/exceptions.index';
 import { InternalServerException } from '@app/shared/error-handling/exceptions/internal-server.exception';
 import { IBalancesRepository } from '@app/shared/interfaces/balance-repository.interface';
+import { LoggerService } from '@app/shared/logger/winston-logger';
+import { ConfigService } from '@nestjs/config';
 
-configDotenv();
 
 @Injectable()
 export class BalancesRepository implements IBalancesRepository {
-    constructor(@Inject(CacheService) private readonly cacheService: CacheService, @Inject(FileService) private readonly fileService: FileService) {
-    }
+    constructor(@Inject(CacheService) private readonly cacheService: CacheService,
+        @Inject(FileService) private readonly fileService: FileService, @Inject(LoggerService) private readonly logger: LoggerService,
+        @Inject(ConfigService) private readonly configService: ConfigService) { }
 
-
-    private readonly filePath = path.resolve(__dirname, '../../../data/balances.json');
+    private readonly filePath = path.resolve(__dirname, this.configService.get<string>('BALANCES_FILE_PATH') || '../../../data/balances.json');
     private readonly cacheKey = 'balances'; // Key to store data in cache
+
 
     // Load all balances from file into cache (if not already loaded)
     private async loadBalancesIntoCache(): Promise<void> {
@@ -71,16 +71,13 @@ export class BalancesRepository implements IBalancesRepository {
     async getRate(asset: string, targetCurrency: string): Promise<number> {
         const rate = await this.cacheService.get<number>(`${asset}-${targetCurrency}`);
         if (!rate) {
+            this.logger.error(`Rate for asset ${asset} and target currency ${targetCurrency} is not available`);
             throw new InternalServerException(`Rate for asset ${asset} and target currency ${targetCurrency} is not available`);
         }
         return rate;
     }
 
-    async rebalanceUserBalances(
-        userId: string,
-        targetPercentages: Record<string, number>,
-        baseCurrency: string = 'usd',
-    ): Promise<void> {
+    async rebalanceUserBalances(userId: string, targetPercentages: Record<string, number>, baseCurrency: string = 'usd'): Promise<void> {
         // Ensure target percentages add up to 100
         const totalPercentage = Object.values(targetPercentages).reduce((sum, p) => sum + p, 0);
         if (totalPercentage !== 100) {
@@ -90,6 +87,7 @@ export class BalancesRepository implements IBalancesRepository {
         // Fetch user balances
         const userBalances = await this.getAllUserBalances(userId);
         if (!userBalances || Object.keys(userBalances).length === 0) {
+            this.logger.error('No balances available for rebalancing');
             throw new Error('No balances available for rebalancing');
         }
 
@@ -100,6 +98,7 @@ export class BalancesRepository implements IBalancesRepository {
             const cacheKey = `${asset}-${baseCurrency}`;
             const rate = await this.cacheService.get<number>(cacheKey); // Fetch rate from cache
             if (!rate) {
+                this.logger.error(`Rate for asset ${asset} is not available`);
                 throw new Error(`Rate for asset ${asset} is not available`);
             }
 
@@ -135,7 +134,7 @@ export class BalancesRepository implements IBalancesRepository {
             // Fetch the conversion rate from the cache for the asset
             const rate = await this.cacheService.get<number>(`${asset}-${targetCurrency}`);
             if (!rate) {
-                logger.info(`Rate for asset ${asset} to ${targetCurrency} is not available`);
+                this.logger.error(`Rate for asset ${asset} to ${targetCurrency} is not available`);
                 continue;
             }
 

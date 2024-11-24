@@ -1,13 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Cache } from 'cache-manager';
 import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as dotenv from 'dotenv'
-import logger from 'libs/shared/src/logger/winston-logger';
 import { CacheService } from 'libs/shared/src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
+import { LoggerService } from '@app/shared/logger/winston-logger';
 
 dotenv.config();
 @Injectable()
@@ -16,7 +14,7 @@ export class RateService implements OnModuleInit {
         private readonly httpService: HttpService,
         @Inject(CacheService) private readonly cacheService: CacheService,
         @Inject(ConfigService) private readonly configService: ConfigService,
-    ) { }
+        @Inject(LoggerService) private readonly logger: LoggerService) { }
     private readonly coingeckoApiUrl = this.configService.get<string>('COINGECKO_URI') || 'https://api.coingecko.com/api/v3/simple/price';
     private readonly coinGeckoIds = this.configService.get<string>('COINGECKO_IDS') || 'bitcoin';
     private readonly coinGeckoCurrencies = this.configService.get('COINGECKO_CURRENCIES') || 'usd'
@@ -60,7 +58,7 @@ export class RateService implements OnModuleInit {
             for (const [currency, rate] of Object.entries(value)) {
                 const cacheKey = `${crypto}-${currency}`;
                 await this.cacheService.set(cacheKey, rate, 360000);
-                logger.info(`Cached rate for ${crypto}-${currency}: ${rate}`);
+                this.logger.log(`Cached rate for ${crypto}-${currency}: ${rate}`);
             }
         }
     }
